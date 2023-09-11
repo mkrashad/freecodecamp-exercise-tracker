@@ -1,4 +1,4 @@
-let UserModel = require('../model/user');
+const UserModel = require('../model/user');
 
 const addUser = (username) => {
   const msg = new UserModel({
