@@ -1,17 +1,18 @@
 const express = require('express');
-const bodyparser = require('body-parser');
+const bodyParser = require('body-parser');
+const userService = require('./service/user.js');
+const Db = require('./db/db');
+
 const app = express();
 const cors = require('cors');
-const userService = require('./services/user.js');
 require('dotenv').config();
-require('./db/db');
 
 app.use(cors());
 app.use(express.static('public'));
 
 // Body-parser middleware
-app.use(bodyparser.urlencoded({ extended: true }));
-app.use(bodyparser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html');
@@ -28,6 +29,22 @@ app.get('/api/users', async function (req, res) {
   res.json(users);
 });
 
-const listener = app.listen(process.env.PORT || 3000, () => {
-  console.log('Your app is listening on port ' + listener.address().port);
+app.post('/api/users/:_id/exercises', async function (req, res) {
+  const { description, duration, date } = req.body;
+  const id = req.params._id;
+  let formatedDate = date;
+  if (!date) {
+    formatedDate = new Date().toDateString();
+  }
+  const exercises = await userService.addExercise(id, {
+    description,
+    duration,
+    formatedDate: date,
+  });
+  res.status(200).json(exercises);
+});
+
+app.listen(process.env.PORT || 3000, () => {
+  console.log('Your app is listening on port ' + process.env.PORT);
+  Db.connectDB();
 });
