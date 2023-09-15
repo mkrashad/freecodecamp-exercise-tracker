@@ -20,13 +20,10 @@ const getUsers = () => {
   return users;
 };
 
-const addExercise = (id, updatedData) => {
-  const user = User.findByIdAndUpdate(
-    id,
-    { $push: { exercises: updatedData } },
-    { new: true }
-  );
+const getUserById = (id) => {
+  const user = User.findById(id).exec();
   return user;
 };
 
-module.exports = { addUser, getUsers, addExercise };
+
+module.exports = { addUser, getUsers, getUserById };
