@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const userService = require('./service/user.js');
 const exerciseService = require('./service/exercise.js');
+const LogService = require('./service/log.js');
 const db = require('./db/db');
 
 const app = express();
@@ -33,8 +34,7 @@ app.get('/api/users', async function (req, res) {
 app.post('/api/users/:_id/exercises', async function (req, res) {
   const { description, duration, date } = req.body;
   const id = req.params._id;
-  const formatedDate =
-    new Date(date).toDateString() || new Date(new Date().now()).toDateString();
+  const formatedDate = new Date(date) || new Date(new Date().now());
   const user = await userService.getUserById(id);
   if (user) {
     const exercise = {
@@ -49,14 +49,34 @@ app.post('/api/users/:_id/exercises', async function (req, res) {
       username: result.username,
       description: result.description,
       duration: result.duration,
-      date: result.date,
+      date: new Date(result.date).toDateString(),
       _id: result.userId,
     };
-    console.log(data);
     res.status(200).json(data);
   } else {
     res.status(400).json({ msg: 'Bad request' });
   }
+});
+
+app.get('/api/users/:_id/logs', async function (req, res) {
+  const userId = req.params._id;
+  const limit = req.query.limit;
+  const logs = await LogService.getLogsByUserId(userId, limit);
+  let logsArray = [];
+  logs.forEach((log) => {
+    logsArray.push({
+      description: log.description,
+      duration: log.duration,
+      date: new Date(log.date).toDateString(),
+    });
+  });
+
+  res.json({
+    username: logs[0]?.username,
+    count: logs.length,
+    _id: logs[0].id,
+    log: logsArray,
+  });
 });
 
 app.listen(process.env.PORT || 3000, () => {
