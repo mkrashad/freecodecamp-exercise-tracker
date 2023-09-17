@@ -34,14 +34,13 @@ app.get('/api/users', async function (req, res) {
 app.post('/api/users/:_id/exercises', async function (req, res) {
   const { description, duration, date } = req.body;
   const id = req.params._id;
-  const formatedDate = new Date(date) || new Date(new Date().now());
   const user = await userService.getUserById(id);
   if (user) {
     const exercise = {
       username: user.username,
       description,
       duration,
-      date: formatedDate,
+      date: date ? new Date(date) : new Date(),
       userId: user._id,
     };
     const result = await exerciseService.addExercise(exercise);
@@ -61,20 +60,18 @@ app.post('/api/users/:_id/exercises', async function (req, res) {
 app.get('/api/users/:_id/logs', async function (req, res) {
   const userId = req.params._id;
   const limit = req.query.limit;
-  const logs = await LogService.getLogsByUserId(userId, limit);
-  let logsArray = [];
-  logs.forEach((log) => {
-    logsArray.push({
-      description: log.description,
-      duration: log.duration,
-      date: new Date(log.date).toDateString(),
-    });
-  });
+  const exercises = await LogService.getLogsByUserId(userId, limit);
+
+  const logsArray = exercises.map((e) => ({
+    description: e.description,
+    duration: e.duration,
+    date: e.date.toDateString(),
+  }));
 
   res.json({
-    username: logs[0]?.username,
-    count: logs.length,
-    _id: logs[0].id,
+    username: exercises[0]?.username,
+    count: exercises.length,
+    _id: exercises[0].id,
     log: logsArray,
   });
 });

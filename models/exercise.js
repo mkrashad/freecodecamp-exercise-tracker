@@ -5,7 +5,7 @@ const exerciseSchema = new mongoose.Schema({
   username: { type: String },
   description: { type: String },
   duration: { type: Number },
-  date: { type: String },
+  date: { type: Date },
 });
 
 module.exports = mongoose.model('Exercise', exerciseSchema);
